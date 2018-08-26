@@ -30,6 +30,7 @@ void dijkstra(int u)
         if (mark[x]) continue;
         
         mark[x] = 1;
+        
         for (auto v: grafo[x])
         {
             if (dist[v.second] > dist[x] + v.first)
