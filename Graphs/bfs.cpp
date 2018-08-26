@@ -13,9 +13,8 @@ bool mark[MAXN];
 void BFS(int u)
 {
 	queue<int> fila;
-	fila.push(u);
-	mark[u] = 1;
-
+	fila.push(u), mark[u] = 1;
+	
 	while (!fila.empty())
 	{
 		int x = fila.front();
