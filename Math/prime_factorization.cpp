@@ -1,5 +1,5 @@
 // Prime Factorization of a number
-// Complexidade: O(sqrt n)
+// O(sqrt n)
 
 #include <bits/stdc++.h>
 
