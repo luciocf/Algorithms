@@ -12,16 +12,16 @@ int bit[MAXN][MAXN], n, m;
 
 void upd(int x, int y, int v)
 {
-    for (; x <= n; x += (x&-x))
-        for (; y <= m; y += (y&-y))
-            bit[x][y] += v;
+    for (int i = x; i <= n; i += (i&-i))
+        for (int j = y; j <= m; j += (j&-j))
+            bit[i][j] += v;
 }
 
 int query(int x, int y)
 {
     int ans = 0;
-    for (; x <= n; x -= (x&-x))
-        for (; y <= m; y -= (y&-y))
-            ans += bit[x][y];
+    for (int i = x; i > 0; i -= (i&-i))
+        for (int j = y; j > 0; j -= (j&-j))
+            ans += bit[i][j];
     return ans;
 }
