@@ -10,13 +10,16 @@ using namespace std;
 
 const int maxn = 2e5+10;
 
-int num[maxn], qtd[maxn], sz[maxn];
+int num[maxn], qtd[maxn];
+
+int sz[maxn], st[maxn], en[maxn], pos[maxn], tt;
 
 vector<int> grafo[maxn], s[maxn];
 
 int find_size(int u, int p)
 {
 	sz[u] = 1;
+	st[u] = ++tt, pos[tt] = num[u];
 
 	for (auto v: grafo[u])
 	{
@@ -24,6 +27,8 @@ int find_size(int u, int p)
 
 		sz[u] += find_size(v, u);
 	}
+
+	en[u] = tt;
 
 	return sz[u];
 }
@@ -44,12 +49,8 @@ void dfs(int u, int p, bool heavy)
 
 	// solve for heavy child, without removing it
 	if (ind != -1)
-	{
 		dfs(ind, u, 1);
-		s[u] = s[ind];
-	}
 
-	s[u].push_back(u);
 	qtd[num[u]]++;
 
 	// add children back
@@ -57,8 +58,11 @@ void dfs(int u, int p, bool heavy)
 	{
 		if (v == p || v == ind) continue;
 
-		for (auto x: s[v])
+		// v's subtree
+		for (int i = st[v]; i <= en[v]; i++)
 		{
+			int x = pos[i];
+
 			s[u].push_back(x);
 			qtd[num[x]]++;
 		}
@@ -66,6 +70,11 @@ void dfs(int u, int p, bool heavy)
 
 	// if u is not a heavy child, remove it
 	if (!heavy)
-		for (auto x: s[u])
+	{
+		for (int i = st[u]; i <= en[u]; i++)
+		{
+			int x = pos[i];
 			qtd[num[x]]--;
+		}
+	}
 }
