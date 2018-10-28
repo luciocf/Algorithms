@@ -4,66 +4,70 @@
 
 using namespace std;
 
-const int MAXN = 1e5+10;
+// Example: Greatest edge weight in a path (with edge update)
+
+// Note: In this version, the heaviest edge of a vertex is always
+// the first one. By doing that, we can use the same segment tree
+// for both subtree and path queries
+
+const int maxn = 1e5+10;
 
 typedef pair<int, int> pii;
 
-int pai[MAXN], nivel[MAXN], size[MAXN], edge[MAXN], n;
-int chain[MAXN], head[MAXN], pos[MAXN], num[MAXN], qtd, c;
-int tree[4*MAXN];
+int pai[maxn], nivel[maxn], size[maxn], in[maxn], out[maxn], tt, n;
 
-vector<pii> grafo[MAXN];
+int head[maxn], num[maxn];
 
-void DFS(int u, int p)
+int tree[4*maxn];
+
+vector<pii> grafo[maxn];
+
+int dfs(int u, int p)
 {
 	size[u] = 1;
+
+	if (grafo[u].size() > 1 && grafo[u][0].first == p) swap(grafo[u][0], grafo[u][1]);
+
 	for (auto P: grafo[u])
 	{
-		int v = P.first, d = P.second;
+		int v = P.first;
+
 		if (v == p) continue;
 
-		pai[v] = u, nivel[v] = nivel[u]+1, edge[v] = d;
+		pai[v] = u, nivel[v] = nivel[u]+1;
+		num[v] = P.second;
 
-		DFS(v, u);
-		size[u] += size[v];
+		size[u] += dfs(v, u);
+
+		if (size[v] > size[grafo[u][0].first]) swap(v, grafo[u][0].first);
 	}
+
+	return size[u];
 }
 
-void hld(int u)
+void hld(int u, int p)
 {
-	if (!head[c]) head[c] = u;
-
-	chain[u] = c, pos[u] = ++qtd;
-	num[qtd] = edge[u];
-
-	int maior = -1, ind = -1;
-	for (auto P: grafo[u])
-	{
-		int v = P.first;
-		if (v != pai[u] && size[v] > maior)
-			maior = size[v], ind = v;
-	}
-
-	if (ind != -1) hld(ind);
+	in[u] = ++tt;
 
 	for (auto P: grafo[u])
 	{
 		int v = P.first;
-		if (v != pai[u] && v != ind)
-		{
-			c++;
-			hld(v);
-		}
+		if (v == p) continue;
+
+		head[v] = (v == grafo[u][0].first ? head[u] : v);
+
+		hld(v, u);
 	}
+
+	out[u] = tt;
 }
 
-int LCA(int u, int v)
+int lca(int u, int v)
 {
-	while (chain[u] != chain[v])
+	while (head[u] != head[v])
 	{
-		int c1 = chain[u], c2 = chain[v];
-		if (nivel[head[c1]] > nivel[head[c2]]) u = pai[head[c1]];
-		else v = pai[head[c2]];
+		if (nivel[head[u]] > nivel[head[v]]) u = pai[head[u]];
+		else v = pai[head[v]];
 	}
 	
 	if (nivel[u] > nivel[v]) return v;
@@ -111,10 +115,11 @@ int query(int node, int tl, int tr, int l, int r)
 	return max(query(2*node, tl, mid, l, r), query(2*node+1, mid+1, tr, l, r));
 }
 
+// the edge from u to its parent becomes v
 void updNode(int u, int v)
 {
-	edge[u] = v;
-	upd(1, 1, n, pos[u], v);
+	num[u] = v;
+	upd(1, 1, n, in[u], v);
 }
 
 int queryPath(int u, int v)
@@ -122,14 +127,15 @@ int queryPath(int u, int v)
 	int ans = -1;
 	while (true)
 	{
-		int c1 = chain[u], c2 = chain[v];
-		if (c1 == c2)
+		if (head[u] == head[v])
 		{
 			if (u == v) return ans;
-			return max(ans, query(1, 1, n, pos[v]+1, pos[u]));
+			return max(ans, query(1, 1, n, in[head[u]]+1, in[u]));
 		}
 
-		ans = max(ans, query(1, 1, n, pos[head[c1]], pos[u]));
-		u = pai[head[c1]];
+		ans = max(ans, query(1, 1, n, in[head[u]], in[u]));
+		u = pai[head[u]];
 	}
 }
+
+int main(){}
