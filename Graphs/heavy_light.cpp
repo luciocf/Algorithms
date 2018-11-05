@@ -1,4 +1,5 @@
 // Heavy-Light Decomposition
+// Decomposición Pesado-Leve
 
  #include <bits/stdc++.h>
 
