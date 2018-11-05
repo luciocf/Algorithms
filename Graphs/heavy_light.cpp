@@ -1,32 +1,33 @@
 // Heavy-Light Decomposition
-// Decomposición Pesado-Leve
 
  #include <bits/stdc++.h>
 
  using namespace std;
 
- const int MAXN = 1e5+10;
+ const int maxn = 1e5+10;
 
  typedef pair<int, int> pii;
 
-int pai[MAXN], nivel[MAXN], size[MAXN], edge[MAXN], n;
+int pai[maxn], nivel[maxn], size[maxn], edge[maxn], n;
 
-int chain[MAXN], head[MAXN], pos[MAXN], num[MAXN], qtd, c;
+int chain[maxn], head[maxn], pos[maxn], qtd, c;
 
-int tree[4*MAXN];
+int tree[4*maxn];
 
-vector<pii> grafo[MAXN];
+vector<pii> grafo[maxn];
 
 void DFS(int u, int p)
 {
 	size[u] = 1;
+	
 	for (auto P: grafo[u])
 	{
 		int v = P.first, d = P.second;
 		if (v == p) continue;
-
- 		pai[v] = u, nivel[v] = nivel[u]+1, edge[v] = d;
+		
  		DFS(v, u);
+		
+		pai[v] = u, nivel[v] = nivel[u]+1, edge[v] = d;
 		size[u] += size[v];
 	}
 }
@@ -36,7 +37,6 @@ void hld(int u)
 	if (!head[c]) head[c] = u;
 
  	chain[u] = c, pos[u] = ++qtd;
-	num[qtd] = edge[u];
 
  	int maior = -1, ind = -1;
 	for (auto P: grafo[u])
@@ -120,6 +120,7 @@ void updNode(int u, int v)
 int queryPath(int u, int v)
 {
 	int ans = -1;
+	
 	while (true)
 	{
 		int c1 = chain[u], c2 = chain[v];
