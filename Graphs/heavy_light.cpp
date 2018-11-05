@@ -1,73 +1,70 @@
 // Heavy-Light Decomposition
 
-#include <bits/stdc++.h>
+ #include <bits/stdc++.h>
 
-using namespace std;
+ using namespace std;
 
-// Example: Greatest edge weight in a path (with edge update)
+ const int MAXN = 1e5+10;
 
-// Note: In this version, the heaviest edge of a vertex is always
-// the first one. By doing that, we can use the same segment tree
-// for both subtree and path queries
+ typedef pair<int, int> pii;
 
-const int maxn = 1e5+10;
+int pai[MAXN], nivel[MAXN], size[MAXN], edge[MAXN], n;
 
-typedef pair<int, int> pii;
+int chain[MAXN], head[MAXN], pos[MAXN], num[MAXN], qtd, c;
 
-int pai[maxn], nivel[maxn], size[maxn], in[maxn], out[maxn], tt, n;
+int tree[4*MAXN];
 
-int head[maxn], num[maxn];
+vector<pii> grafo[MAXN];
 
-int tree[4*maxn];
-
-vector<pii> grafo[maxn];
-
-int dfs(int u, int p)
+void DFS(int u, int p)
 {
 	size[u] = 1;
+	for (auto P: grafo[u])
+	{
+		int v = P.first, d = P.second;
+		if (v == p) continue;
 
-	if (grafo[u].size() > 1 && grafo[u][0].first == p) swap(grafo[u][0], grafo[u][1]);
+ 		pai[v] = u, nivel[v] = nivel[u]+1, edge[v] = d;
+ 		DFS(v, u);
+		size[u] += size[v];
+	}
+}
 
+void hld(int u)
+{
+	if (!head[c]) head[c] = u;
+
+ 	chain[u] = c, pos[u] = ++qtd;
+	num[qtd] = edge[u];
+
+ 	int maior = -1, ind = -1;
 	for (auto P: grafo[u])
 	{
 		int v = P.first;
-
-		if (v == p) continue;
-
-		pai[v] = u, nivel[v] = nivel[u]+1;
-		num[v] = P.second;
-
-		size[u] += dfs(v, u);
-
-		if (size[v] > size[grafo[u][0].first]) swap(v, grafo[u][0].first);
+		if (v != pai[u] && size[v] > maior)
+			maior = size[v], ind = v;
 	}
 
-	return size[u];
-}
+ 	if (ind != -1) hld(ind);
 
-void hld(int u, int p)
-{
-	in[u] = ++tt;
-
-	for (auto P: grafo[u])
+ 	for (auto P: grafo[u])
 	{
 		int v = P.first;
-		if (v == p) continue;
-
-		head[v] = (v == grafo[u][0].first ? head[u] : v);
-
-		hld(v, u);
+		if (v != pai[u] && v != ind)
+		{
+			c++;
+			hld(v);
+		}
 	}
-
-	out[u] = tt;
 }
 
-int lca(int u, int v)
+int LCA(int u, int v)
 {
-	while (head[u] != head[v])
+	while (chain[u] != chain[v])
 	{
-		if (nivel[head[u]] > nivel[head[v]]) u = pai[head[u]];
-		else v = pai[head[v]];
+		int c1 = chain[u], c2 = chain[v];
+		if (nivel[head[c1]] > nivel[head[c2]]) u = pai[head[c1]];
+		else v = pai[head[c2]];
 	}
 	
 	if (nivel[u] > nivel[v]) return v;
@@ -82,11 +79,10 @@ void build(int node, int l, int r)
 		return;
 	}
 
-	int mid = (l+r)>>1;
+ 	int mid = (l+r)>>1;
 
-	build(2*node, l, mid); build(2*node+1, mid+1, r);
-
-	tree[node] = max(tree[2*node], tree[2*node+1]);
+ 	build(2*node, l, mid); build(2*node+1, mid+1, r);
+ 	tree[node] = max(tree[2*node], tree[2*node+1]);
 }
 
 void upd(int node, int l, int r, int pos, int v)
@@ -97,12 +93,12 @@ void upd(int node, int l, int r, int pos, int v)
 		return;
 	}
 
-	int mid = (l+r)>>1;
+ 	int mid = (l+r)>>1;
 
-	if (pos <= mid) upd(2*node, l, mid, pos, v);
+ 	if (pos <= mid) upd(2*node, l, mid, pos, v);
 	else upd(2*node+1, mid+1, r, pos, v);
 
-	tree[node] = max(tree[2*node], tree[2*node+1]);
+ 	tree[node] = max(tree[2*node], tree[2*node+1]);
 }
 
 int query(int node, int tl, int tr, int l, int r)
@@ -110,16 +106,14 @@ int query(int node, int tl, int tr, int l, int r)
 	if (tl > r || tr < l) return -1;
 	if (tl >= l && tr <= r) return tree[node];
 
-	int mid = (tl+tr)>>1;
-
-	return max(query(2*node, tl, mid, l, r), query(2*node+1, mid+1, tr, l, r));
+ 	int mid = (tl+tr)>>1;
+ 	return max(query(2*node, tl, mid, l, r), query(2*node+1, mid+1, tr, l, r));
 }
 
-// the edge from u to its parent becomes v
 void updNode(int u, int v)
 {
-	num[u] = v;
-	upd(1, 1, n, in[u], v);
+	edge[u] = v;
+	upd(1, 1, n, pos[u], v);
 }
 
 int queryPath(int u, int v)
@@ -127,15 +121,14 @@ int queryPath(int u, int v)
 	int ans = -1;
 	while (true)
 	{
-		if (head[u] == head[v])
+		int c1 = chain[u], c2 = chain[v];
+		if (c1 == c2)
 		{
 			if (u == v) return ans;
-			return max(ans, query(1, 1, n, in[head[u]]+1, in[u]));
+			return max(ans, query(1, 1, n, pos[v]+1, pos[u]));
 		}
-
-		ans = max(ans, query(1, 1, n, in[head[u]], in[u]));
-		u = pai[head[u]];
+		
+ 		ans = max(ans, query(1, 1, n, pos[head[c1]], pos[u]));
+		u = pai[head[c1]];
 	}
 }
-
-int main(){}
