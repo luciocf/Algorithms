@@ -1,7 +1,7 @@
 // DP Optimization - Divide and Conquer
 // O(nm log m)
 
-// DP's of the form dp[i][j] = min(dp[i-1][k] + C(k, j)) (k <= j)
+// DPs of the form dp[i][j] = min(dp[i-1][k] + C(k, j)) (k <= j)
 // Can be applied when opt(i, j) <= opt(i, j+1)
 
 #include <bits/stdc++.h>
