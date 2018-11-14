@@ -42,8 +42,8 @@ void flush(int node, int l, int r)
 
 void upd(int node, int tl, int tr, int l, int r, int v)
 {
-    if (tl > r || tr < l) return;
     flush(node, tl, tr);
+    if (tl > r || tr < l) return;
 
     if (tl >= l && tr <= r)
     {
@@ -62,8 +62,8 @@ void upd(int node, int tl, int tr, int l, int r, int v)
 
 int query(int node, int tl, int tr, int l, int r)
 {
-    if (tl > r || tr < l) return 0;
     flush(node, tl, tr);
+    if (tl > r || tr < l) return 0;
 
     if (tl >= l && tr <= r) return tree[node];
 
