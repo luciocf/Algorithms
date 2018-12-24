@@ -1,48 +1,51 @@
-// Tarjan's Algorithm
-// O(n+m)
-
 #include <bits/stdc++.h>
 
 using namespace std;
 
-const int MAXN = 1e5+10;
-const int INF = 1e9+10;
+const int maxn = 1e5+10;
 
-int in[MAXN], low[MAXN], c, t;
-vector<int> grafo[MAXN], comp[MAXN];
+const int inf = 1e9+10;
+
+int in[maxn], low[maxn], cc, tt;
+
+int comp[maxn];
+
+vector<int> grafo[maxn];
+
 stack<int> stk;
 
-void DFS(int u)
+void dfs(int u)
 {
-    in[u] = low[u] = ++t;
+    in[u] = low[u] = ++tt;
     stk.push(u);
 
     for (auto v: grafo[u])
     {
-        if (in[v] != 0)
+        if (in[v])
         {
             low[u] = min(low[u], in[v]);
-            continue;
+            continue; 
         }
 
-        DFS(v);
+        dfs(v);
 
         low[u] = min(low[u], low[v]);
     }
 
     if (low[u] == in[u])
     {
-        c++;
+        ++cc;
         while (stk.top() != u)
         {
-            comp[c].push_back(stk.top());
+            comp[stk.top()] = cc;
+            in[stk.top()] = inf;
 
-            in[stk.top()] = INF;
             stk.pop();
         }
-        comp[c].push_back(stk.top());
-        
-        in[stk.top()] = INF;
-        stk.pop();
+
+        comp[u] = cc;
+        in[u] = inf;
+
+        stk.top();
     }
 }
