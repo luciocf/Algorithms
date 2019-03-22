@@ -5,16 +5,22 @@
 
 using namespace std;
 
-const int MAXN = 5e4+10;
-const int MAXQ = 5e4+10.
+const int maxn = 1e5+10;
+const int maxq = 1e5+10;
+const int bucket = 320;
 
-struct Q {
+struct Query {
 	int l, r, bloco, id;
-} q[MAXQ];
+} q[maxq];
 
-int ans[MAXN], num[MAXN];
+int ans[maxn], num[maxn], aux;
 
-bool comp(Q a, Q b)
+// arbitrary functions
+void add(int x) {}
+
+void rem(int x) {}
+
+bool comp(Query a, Query b)
 {
 	if (a.bloco == b.bloco) return a.r < b.r;
 	return a.bloco < b.bloco;
@@ -22,27 +28,32 @@ bool comp(Q a, Q b)
 
 int main(void)
 {
-	int s = sqrt(n)+1;
+	int n, m;
+	cin >> n >> m;
 
-	for (int i = 1; i <= m; i++)
+	for (int i = 0; i < n; i++)
+		cin >> num[i];
+
+	for (int i = 0; i < m; i++)
 	{
 		cin >> q[i].l >> q[i].r;
-		q[i].id = i, q[i].bloco = q[i].l/s;
+
+		q[i].id = i, q[i].bloco = q[i].l/bucket;
 	}
 
-	int l = 1, r = 1, sum = num[1];
+	sort(q, q+m, comp);
 
-	for (int i = 1; i <= m; i++)
+	int l = 1, r = 1;
+
+	for (int i = 0; i < m; i++)
 	{
-		while (r > q[i].r)
-			sum -= num[r--];
-		while (r < q[i].r)
-			sum += num[++r];
-		while (l > q[i].l)
-			sum += num[--l];
-		while (l < q[i].l)
-			sum -= num[l++];
+		int ql = l, qr = r;
 
-		ans[q[i].id] = sum;
+		while (r > qr) rem(r--);
+		while (r < qr) add(++r);
+		while (l > ql) add(--l);
+		while (l < ql) rem(l++);
+
+		ans[q[i].id] = aux;
 	}
 }
