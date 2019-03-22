@@ -1,6 +1,8 @@
-// Convex Hull Trick
+// Convex Hull Trick (not fully dynamic)
+// Queries in O(log n)
 
 #include <bits/stdc++.h>
+
 #define ff first
 #define ss second
 
@@ -8,39 +10,39 @@ using namespace std;
 
 typedef pair<int, int> pii;
 
-vector<pii> v; // contains lines
+vector<pii> env; // contains lines
 
-// true if b is never minimal, false otherwise
+// checks if line b is useless
 bool bad(pii a, pii b, pii c)
 {
+	// for min queries, reverse this
     return (a.ss-c.ss)*(c.ff-b.ff) >= (b.ss-c.ss)*(c.ff-a.ff);
 }
 
-// add new line
 void add(pii line)
 {
-	while (v.size() > 1 && bad(v[v.size()-2], v[v.size()-1], line))
-		v.pop_back();
-	v.push_back(line);
+	while (env.size() > 1 && bad(env[env.size()-2], env.back(), line))
+		env.pop_back();
+
+	env.push_back(line);
 }
 
 int get(int mid, int x)
 {
-	return (v[mid].ff*x+v[mid].ss);
+	return (env[mid].ff*x + env[mid].ss);
 }
 
-// find value of minimal line
-int busca(int x)
+int query(int x)
 {
-	if (v.size() == 0) return get(0, x);
+	if (env.size() == 0) return get(0, x);
 
-	int ini = 0, fim = v.size()-2, ans = get(v.size()-1, x);
+	int ini = 0, fim = env.size()-2, ans = get(env.size()-1, x);
 
 	while (ini <= fim)
 	{
-		int mid = (ini+fim)/2;
+		int mid = (ini+fim)>>1;
 
-		if (get(mid, x) <= get(mid+1, x)) ans = get(mid, x), fim = mid-1;
+		if (get(mid, x) >= get(mid+1, x)) ans = get(mid, x), fim = mid-1;
 		else ini = mid+1;
 	}
 
