@@ -5,41 +5,49 @@
 
 using namespace std;
 
-const int MAXN = 1e5+10;
+const int maxn = 1e5+10;
 
-vector<int> grafo[2][MAXN];
-stack<int> pilha;
-bool mark[MAXN];
+int scc[maxn];
 
-void DFS(int u, int k)
+bool mark[maxn];
+
+// normal and transposed graphs
+vector<int> grafo[2][maxn];
+
+stack<int> stk;
+
+void dfs1(int u)
 {
-	mark[u] = 1;
-	for (auto v: grafo[k][u])
-	{
-		if (mark[v]) continue;
+    mark[u] = 1;
 
-		DFS(v, k);
-	}
-	if (k == 0) pilha.push(u);
+    for (auto v: grafo[0][u])
+        if (!mark[v])
+            dfs1(v);
+
+    stk.push(u);
 }
 
-int main(void)
+void dfs2(int u, int cc)
 {
-	for (int i = 1; i <= n; i++)
-		if (!mark[i])
-			DFS(i, 0);
-	
-	memset(mark, 0, sizeof mark);
-	int ans = 0;
+    scc[u] = cc;
 
-	while (!pilha.empty())
-	{
-		int x = pilha.top();
-		pilha.pop();
+    for (auto v: grafo[1][u])
+        if (!scc[v])
+            dfs2(v, cc);
+}
 
-		if (mark[x]) continue;
+void kosaraju(int n)
+{
+    for (int i = 1; i <= n; i++)
+        if (!mark[i])
+            dfs1(i);
 
-		DFS(x, 1);
-		ans++;
-	}
+    int cc = 0;
+    while (!stk.empty())
+    {
+        int u = stk.top();
+        stk.pop();
+
+        if (!scc[u]) dfs2(u, ++cc);
+    }
 }
