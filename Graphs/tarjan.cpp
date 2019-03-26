@@ -1,3 +1,6 @@
+// Tarjan's Algorithm for SCCs
+// O(n+m)
+
 #include <bits/stdc++.h>
 
 using namespace std;
@@ -6,9 +9,8 @@ const int maxn = 1e5+10;
 
 const int inf = 1e9+10;
 
-int in[maxn], low[maxn], cc, tt;
-
-int comp[maxn];
+int in[maxn], low[maxn], tt;
+int scc[maxn], cc;
 
 vector<int> grafo[maxn];
 
@@ -32,20 +34,16 @@ void dfs(int u)
         low[u] = min(low[u], low[v]);
     }
 
-    if (low[u] == in[u])
+    if (low[u] != in[u]) return;
+
+    ++cc;
+    while (true)
     {
-        ++cc;
-        while (stk.top() != u)
-        {
-            comp[stk.top()] = cc;
-            in[stk.top()] = inf;
+        int x = stk.top();
+        stk.pop();
 
-            stk.pop();
-        }
+        scc[x] = cc, in[x] = inf;
 
-        comp[u] = cc;
-        in[u] = inf;
-
-        stk.top();
+        if (x == u) break;
     }
 }
