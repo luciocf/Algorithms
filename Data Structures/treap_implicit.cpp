@@ -1,4 +1,5 @@
 // Implicit Treap
+// O(log n) depth
 
 #include <bits/stdc++.h>
 
@@ -7,35 +8,27 @@ using namespace std;
 struct node
 {
 	node *l, *r;
-	int v, w, sz, soma, lazy;
+	int v, w, sz, sum, lazy;
 
-	node()
+	node(int vv)
 	{
+		v = sum = vv, lazy = 0, sz = 1, w = rand();
 		l = r = NULL;
-		v = soma = lazy = 0, sz = 1, w = rand();
 	}
 };
 
 typedef node*& node_t;
 
-int sz(node *t)
-{
-	if (!t) return 0;
-	return t->sz;
-}
+int sz(node *t){return (t ? t->sz : 0);}
 
-int soma(node *t)
-{
-	if (!t) return 0;
-	return t->soma;
-}
+int sum(node *t){return (t ? t->sum : 0);}
 
 void op(node *t)
 {
 	if (t)
 	{
-		t->sz = 1+sz(t->l)+sz(t->r);
-		t->soma = t->v+soma(t->l)+soma(t->r);
+		t->sz = sz(t->l)+sz(t->r)+1;
+		t->sum = sum(t->l)+sum(t->r)+t->v;
 	}
 }
 
@@ -46,21 +39,22 @@ void flush(node *t)
 	if (t->l) t->l->lazy += t->lazy;
 	if (t->r) t->r->lazy += t->lazy;
 
-	t->v += t->lazy, t->soma += t->lazy;
+	t->v += t->lazy, t->sum += t->lazy;
 	t->lazy = 0;
 }
 
-void split(node *t, int x, node_t l, node_t r, int add=0)
+void split(node *t, node_t l, node_t r, int pos, int add=0)
 {
-	if (!t) return void(l=r=NULL);
+    if (!t) return void(l=r=NULL);
 
-	flush(t);
+    flush(t);
 
-	int pos = add+sz(t->l);
-	if (pos >= x) split(t->l, x, l, t->l, add), r = t;
-	else split(t->r, x, t->r, r, pos+1), l = t;
+    int v = add+sz(t->l);
 
-	op(t);
+    if (v >= pos) split(t->l, l, t->l, pos, add), r = t;
+    else split(t->r, t->r, r, pos, v+1), l = t;
+
+    op(t);
 }
 
 void merge(node_t t, node *l, node *r)
@@ -74,55 +68,58 @@ void merge(node_t t, node *l, node *r)
 	op(t);
 }
 
-void insert(node_t t, int pos, int x)
+void insert(node_t t, int pos, int v)
 {
-	node *aux = new node(), *l = NULL, *r = NULL;
-	aux->v = aux->soma = x;
+    node *t1 = NULL, *t2 = NULL;
+    node *aux = new node(v);
 
-	flush(t);
+    flush(t);
 
-	split(t, pos, l, r);
-	merge(l, l, aux);
-	merge(t, l, r);
+    split(t, t1, t2, pos);
+    merge(t1, t1, aux);
+    merge(t, t1, t2);
 
-	op(t);
+    op(t);
 }
 
 void erase(node_t t, int pos, int add=0)
 {
 	flush(t);
 
-	if (pos == add+sz(t->l)) merge(t, t->l, t->r);
-	else if (pos < add+sz(t->l)) erase(t->l, pos, add);
-	else erase(t->r, pos, add+sz(t->l)+1);
+    int v = add+sz(t->l);
 
-	op(t);
+    if (v == pos) merge(t, t->l, t->r);
+    else if (v > pos) erase(t->l, pos, add);
+    else erase(t->r, pos, v+1);
+
+    op(t);
 }
 
 int upd(node_t t, int l, int r, int v)
 {
 	node *t1 = NULL, *t2 = NULL, *t3 = NULL;
 
-	split(t, l, t1, t2);
-	split(t2, r-l+1, t2, t3);
+	split(t, t1, t2, l);
+	split(t2, t2, t3, r-l+1);
 
 	t2->lazy += v;
 
+	merge(t2, t2, t3);
 	merge(t, t1, t2);
-	merge(t, t, t3);
 }
 
-int query(node_t t, int l, int r)
+int query(node *t, int l, int r)
 {
-	node *t1 = NULL, *t2 = NULL, *t3 = NULL;
+    node *t1, *t2, *t3;
+    t1 = t2 = t3 = NULL;
 
-	split(t, l, t1, t2);
-	split(t2, r-l+1, t2, t3);
+    split(t, t1, t2, l);
+    split(t2, t2, t3, r-l+1);
 
-	int ans = t2->soma;
+    int ans = t2->sum;
 
-	merge(t, t1, t2);
-	merge(t, t, t3);
+    merge(t2, t2, t3);
+    merge(t, t1, t2);
 
-	return ans;
+    return ans;
 }
