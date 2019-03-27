@@ -10,9 +10,9 @@ struct node
     int v, w, sz;
     node *l, *r;
 
-    node()
+    node(int vv)
     {
-        v = 0, sz = 1, w = rand();
+        v = vv, sz = 1, w = rand();
         l = r = NULL;
     }
 };
