@@ -11,41 +11,36 @@ typedef double dd;
 
 struct Line
 {
-	// 0 for a line
-	// 1 for an x-coord query
-	bool type;
+	// 0 for lines in the envelope
+	// 1 for x-coord queries
+	char type;
 
-	// leftmost x-coordinate covered by line
-	dd left;
+	// leftmost x-coord covered by line
+	dd x;
 
 	// slope and y-intercept
 	ll m, b;
 };
 
-bool operator < (const Line &a, const Line &b)
-{
-	if (a.type || b.type) return a.left < b.left;
-
-	return a.m > b.m; // for max queries reverse this
-}
-
-typedef set<Line>::iterator sli;
+typedef set<Line>::iterator sit;
 
 set<Line> env;
 
-bool first(sli it)
+bool operator< (const Line &a, const Line &b)
 {
-	return it == env.begin();
+	if (a.type+b.type > 0) return a.x < b.x;
+
+	return a.m < b.m; // reverse this for max queries
 }
 
-bool last(sli it)
+bool hasPrev(sit it)
 {
-	return next(it) == env.end();
+	return (it != env.begin());
 }
 
-bool bad(Line l1, Line l2, Line l3)
+bool hasNext(sit it)
 {
-    return (l3.b-l1.b)*(l1.m-l2.m) < (l2.b-l1.b)*(l1.m-l3.m);
+	return (next(it) != env.end());
 }
 
 dd intersect(Line l1, Line l2)
@@ -53,25 +48,30 @@ dd intersect(Line l1, Line l2)
 	return (dd)(l2.b-l1.b)/(l1.m-l2.m);
 }
 
-void get_left(sli it)
+bool bad(Line l1, Line l2, Line l3)
 {
-	if (!first(it))
+	return intersect(l1, l3) < intersect(l1, l2);
+}
+
+void get_x(sit it)
+{
+	if (hasPrev(it))
 	{
 		Line l = *it;
 
-		l.left = intersect(*prev(it), *it);
+		l.x = intersect(*prev(it), *it);
 
-		env.erase(it);
-		env.insert(l);
+		env.erase(it); env.insert(l);
 	}
 }
 
-
-void add(Line l)
+void add(ll m, ll b)
 {
-	sli it = env.lower_bound(l);
+	Line l = {0, 0, m, b};
 
-	// parallel case
+	sit it = env.lower_bound(l);
+
+	// parallel lines case
 	if (it != env.end() && it->m == l.m)
 	{
 		if (it->b <= l.b) return;
@@ -81,30 +81,30 @@ void add(Line l)
 	env.insert(l);
 	it = env.find(l);
 
-	// check if the inserted line is useless
-	if (!first(it) && !last(it) && bad(*prev(it), *it, *next(it)))
+	// checks if line is useless
+	if (hasPrev(it) && hasNext(it) && bad(*prev(it), *it, *next(it)))
 	{
 		env.erase(it);
 		return;
 	}
 
-	// remove lines on the right
-	while (!last(it) && !last(next(it)) && bad(*it, *next(it), *next(next(it))))
+	// remove lines in the right
+	while (hasNext(it) && hasNext(next(it)) && bad(*it, *next(it), *next(next(it))))
 		env.erase(next(it));
 
-	// remove lines on the left
-	while (!first(it) && !first(prev(it)) && bad(*prev(prev(it)), *prev(it), *it))
+	// remove lines in the left
+	while (hasPrev(it) && hasPrev(prev(it)) && bad(*prev(prev(it)), *prev(it), *it))
 		env.erase(prev(it));
 
-	// update left values
-	get_left(it);
-	if (!last(it)) get_left(next(it));
+	// update the leftmost x-coord value
+	get_x(it);
+	if (hasNext(it)) get_x(next(it));
 }
 
 ll query(ll x)
 {
-	sli it = env.upper_bound({1, (dd)x, 0, 0});
+	sit it = env.upper_bound({1, (dd)x, 0, 0});
 	it--;
 
-	return it->m * x + it->b;
+	return (it->m * x + it->b);
 }
