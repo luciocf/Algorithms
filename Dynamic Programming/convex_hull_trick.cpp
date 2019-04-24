@@ -1,50 +1,110 @@
-// Convex Hull Trick (not fully dynamic)
-// Queries in O(log n)
+// Convex Hull Trick
+// O(log n) per query and insertion
 
 #include <bits/stdc++.h>
 
-#define ff first
-#define ss second
-
 using namespace std;
 
-typedef pair<int, int> pii;
+typedef long long ll;
 
-vector<pii> env; // contains lines
+typedef double dd;
 
-// checks if line b is useless
-bool bad(pii a, pii b, pii c)
+struct Line
 {
-	// for min queries, reverse this
-    return (a.ss-c.ss)*(c.ff-b.ff) >= (b.ss-c.ss)*(c.ff-a.ff);
+	// 0 for a line
+	// 1 for an x-coord query
+	bool type;
+
+	// leftmost x-coordinate covered by line
+	dd left;
+
+	// slope and y-intercept
+	ll m, b;
+};
+
+bool operator < (const Line &a, const Line &b)
+{
+	if (a.type || b.type) return a.left < b.left;
+
+	return a.m > b.m; // for max queries reverse this
 }
 
-void add(pii line)
-{
-	while (env.size() > 1 && bad(env[env.size()-2], env.back(), line))
-		env.pop_back();
+typedef set<Line>::iterator sli;
 
-	env.push_back(line);
+set<Line> env;
+
+bool first(sli it)
+{
+	return it == env.begin();
 }
 
-int get(int mid, int x)
+bool last(sli it)
 {
-	return (env[mid].ff*x + env[mid].ss);
+	return next(it) == env.end();
 }
 
-int query(int x)
+bool bad(Line l1, Line l2, Line l3)
 {
-	if (env.size() == 0) return get(0, x);
+    return (l3.b-l1.b)*(l1.m-l2.m) < (l2.b-l1.b)*(l1.m-l3.m);
+}
 
-	int ini = 0, fim = env.size()-2, ans = get(env.size()-1, x);
+dd intersect(Line l1, Line l2)
+{
+	return (dd)(l2.b-l1.b)/(l1.m-l2.m);
+}
 
-	while (ini <= fim)
+void get_left(sli it)
+{
+	if (!first(it))
 	{
-		int mid = (ini+fim)>>1;
+		Line l = *it;
 
-		if (get(mid, x) >= get(mid+1, x)) ans = get(mid, x), fim = mid-1;
-		else ini = mid+1;
+		l.left = intersect(*prev(it), *it);
+
+		env.erase(it);
+		env.insert(l);
+	}
+}
+
+
+void add(Line l)
+{
+	sli it = env.lower_bound(l);
+
+	// parallel case
+	if (it != env.end() && it->m == l.m)
+	{
+		if (it->b <= l.b) return;
+		env.erase(it);
 	}
 
-	return ans;
+	env.insert(l);
+	it = env.find(l);
+
+	// check if the inserted line is useless
+	if (!first(it) && !last(it) && bad(*prev(it), *it, *next(it)))
+	{
+		env.erase(it);
+		return;
+	}
+
+	// remove lines on the right
+	while (!last(it) && !last(next(it)) && bad(*it, *next(it), *next(next(it))))
+		env.erase(next(it));
+
+	// remove lines on the left
+	while (!first(it) && !first(prev(it)) && bad(*prev(prev(it)), *prev(it), *it))
+		env.erase(prev(it));
+
+	// update left values
+	get_left(it);
+	if (!last(it)) get_left(next(it));
+}
+
+ll query(ll x)
+{
+	sli it = env.upper_bound({1, (dd)x, 0, 0});
+	it--;
+
+	return it->m * x + it->b;
 }
