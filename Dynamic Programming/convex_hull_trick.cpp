@@ -30,7 +30,7 @@ bool operator< (const Line &a, const Line &b)
 {
 	if (a.type+b.type > 0) return a.x < b.x;
 
-	return a.m < b.m; // reverse this for max queries
+	return a.m > b.m; // reverse this for max queries
 }
 
 bool hasPrev(sit it)
