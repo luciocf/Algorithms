@@ -47,7 +47,7 @@ int main(void)
 
 	for (int i = 0; i < m; i++)
 	{
-		int ql = l, qr = r;
+		int ql = q[i].l, qr = q[i].r;
 
 		while (r > qr) rem(r--);
 		while (r < qr) add(++r);
