@@ -16,6 +16,6 @@ void get(int n)
         if (n%i) continue;
 
         if (n/i == i) d.push_back(i);
-        else d.puhs_back(i), d.push_back(n/i);
+        else d.push_back(i), d.push_back(n/i);
     }
 }
