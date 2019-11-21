@@ -34,13 +34,13 @@ void op(node *t)
 
 void flush(node *t)
 {
-	if (!t) return;
+    if (!t) return;
 
-	if (t->l) t->l->lazy += t->lazy;
-	if (t->r) t->r->lazy += t->lazy;
+    if (t->l) t->l->lazy += t->lazy;
+    if (t->r) t->r->lazy += t->lazy;
 
-	t->v += t->lazy, t->sum += t->lazy;
-	t->lazy = 0;
+    t->v += t->lazy, t->sum += t->lazy;
+    t->lazy = 0;
 }
 
 void split(node *t, node_t l, node_t r, int pos, int add=0)
@@ -84,7 +84,7 @@ void insert(node_t t, int pos, int v)
 
 void erase(node_t t, int pos, int add=0)
 {
-	flush(t);
+    flush(t);
 
     int v = add+sz(t->l);
 
@@ -97,15 +97,14 @@ void erase(node_t t, int pos, int add=0)
 
 int upd(node_t t, int l, int r, int v)
 {
-	node *t1 = NULL, *t2 = NULL, *t3 = NULL;
+    node *t1 = NULL, *t2 = NULL, *t3 = NULL;
+    split(t, t1, t2, l);
+    split(t2, t2, t3, r-l+1);
 
-	split(t, t1, t2, l);
-	split(t2, t2, t3, r-l+1);
+    t2->lazy += v;
 
-	t2->lazy += v;
-
-	merge(t2, t2, t3);
-	merge(t, t1, t2);
+    merge(t2, t2, t3);
+    merge(t, t1, t2);
 }
 
 int query(node *t, int l, int r)
