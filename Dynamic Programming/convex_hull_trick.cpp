@@ -40,7 +40,7 @@ bool hasPrev(sit it)
 
 bool hasNext(sit it)
 {
-	return (next(it) != env.end());
+	return (next(it) != env.end() && ++it != env.end());
 }
 
 dd intersect(Line l1, Line l2)
