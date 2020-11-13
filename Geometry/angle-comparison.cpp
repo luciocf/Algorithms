@@ -1,7 +1,4 @@
-// Comparison function checking if the oriented angle between a pair of vectors (a1, b1) is smaller
-// than the one between (a2, b2).
-
-// For non-oriented angles, use the absolute value of the cross product
+// Comparison function checking if the angle between a pair of vectors (a1, b1) is smaller than the one between (a2, b2).
 
 #include <bits/stdc++.h>
 
@@ -25,8 +22,8 @@ ll dot(pp a, pp b)
 
 bool comp(pp a1, pp b1, pp a2, pp b2)
 {
-	pp p1 = {dot(a1, b1), cross(a1, b1)};
-	pp p2 = {dot(a2, b2), cross(a2, b2)};
+	pp p1 = {dot(a1, b1), abs(cross(a1, b1))};
+	pp p2 = {dot(a2, b2), abs(cross(a2, b2))};
 
 	return cross(p1, p2) > 0;
 }
