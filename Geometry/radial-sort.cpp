@@ -7,7 +7,18 @@
 
 using namespace std;
 
+typedef long long ll;
 typedef pair<int, int> pt;
+
+ll mod(pt a)
+{
+	return 1ll*a.x*a.x + 1ll*a.y*a.y;
+}
+
+ll cross(pt a, pt b)
+{
+	return 1ll*a.x*b.y - 1ll*a.y*b.x;
+}
 
 bool comp(pt a, pt b)
 {
