@@ -12,18 +12,18 @@ typedef pair<int, int> pt;
 
 ll cross(pp a, pp b)
 {
-	return a.x*b.y - a.y*b.x;
+	return 1ll*a.x*b.y - a.y*b.x;
 }
 
 ll dot(pp a, pp b)
 {
-	return a.x*b.x + a.y*b.y;
+	return 1ll*a.x*b.x + a.y*b.y;
 }
 
-bool comp(pp a1, pp b1, pp a2, pp b2)
+bool comp(pt a1, pt b1, pt a2, pt b2)
 {
-	pp p1 = {dot(a1, b1), abs(cross(a1, b1))};
-	pp p2 = {dot(a2, b2), abs(cross(a2, b2))};
+	pt p1 = {dot(a1, b1), abs(cross(a1, b1))};
+	pt p2 = {dot(a2, b2), abs(cross(a2, b2))};
 
 	return cross(p1, p2) > 0;
 }
