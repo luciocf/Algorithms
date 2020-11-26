@@ -1,7 +1,7 @@
 // Area of Union of Rectangles
 // O(n log maxc)
 
-// This implementantion assumes the y-coordinates are in [0, 2e6]. If not, compress coordinates.
+// This implementantion assumes the y-coordinates are in [0, 2e6]. If not, use a sparse segment tree.
 
 #include <bits/stdc++.h>
 
