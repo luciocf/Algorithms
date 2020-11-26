@@ -1,31 +1,37 @@
-// Finding an Eulerian Circuit
-// O(n+m)
+// Euler Tour
+// O(n+M)
 
 #include <bits/stdc++.h>
 
 using namespace std;
 
-const int maxn = 1e5+10;
+#define ff first
+#define ss second
+
+const int maxn =  1e5+10;
 
 typedef pair<int, int> pii;
 
-bool mark[maxn];
-
-// stores (u, edge)
+// (vértice, ind da aresta)
 vector<pii> grafo[maxn];
-
-vector<int> path;
-
-void dfs(int u)
+ 
+int ind[maxn];
+bool mark[maxn];
+vector<int> ciclo;
+ 
+void dfs(int u, int x)
 {
-	for (auto v: grafo[u])
+	while (ind[u] < grafo[u].size())
 	{
-		if (!mark[v.second])
-		{	
-			mark[v.second] = 1;
-			dfs(v.first);
+		int v = grafo[u][ind[u]].ff, e = grafo[u][ind[u]].ss;
+		++ind[u];
+ 
+		if (!mark[e])
+		{
+			mark[e] = 1;
+			dfs(v);
 		}
 	}
-
-	path.push_back(u);
+ 
+	ciclo.push_back(u);
 }
