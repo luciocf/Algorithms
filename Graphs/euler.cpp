@@ -1,5 +1,5 @@
 // Euler Tour
-// O(n+M)
+// O(n + m)
 
 #include <bits/stdc++.h>
 
