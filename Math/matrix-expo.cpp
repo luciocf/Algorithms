@@ -29,7 +29,7 @@ struct Matriz
 		return ans;
 	}
 
-	friend Matriz pot(Matriz a, long long b)
+	static Matriz pot(Matriz a, long long b)
 	{
 		Matriz ans(a.n, a.m);
 
