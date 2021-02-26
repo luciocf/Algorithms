@@ -1,58 +1,121 @@
-// Block Cut Tree
+// Finds biconnected components and builds Block-Cut Tree
+// Complexity: O(n+m)
 
 #include <bits/stdc++.h>
 
+#define all(x) x.begin(), x.end()
+#define ff first
+#define ss second
+
 using namespace std;
 
-const int maxn = 1e5+10;
+typedef long long ll;
+typedef pair<int, int> pii;
 
-int in[maxn], low[maxn], id[maxn], tt, cc;
+const int maxn = 2e5+10;
 
-bool art[maxn];
+int n;
 
-vector<int> grafo[maxn], tree[maxn], stk;
+pii edge[maxn];
 
-vector< vector<int> > comp;
+int in[maxn], low[maxn], tt;
+bool mark_edge[maxn], art[maxn];
 
-void dfs(int u, int p)
+int sz_bcc[maxn];
+
+vector<vector<int>> bcc;
+vector<int> tree[maxn];
+
+vector<pii> grafo[maxn];
+
+stack<int> stk;
+
+void make_component(int last)
 {
-	in[u] = low[u] = ++tt;
-	stk.push_back(u);
+	bcc.push_back(vector<int>());
 
-	for (auto v: grafo[u])
+	while (!stk.empty())
 	{
-		if (v == p) continue;
+		int e = stk.top(); stk.pop();
 
-		if (in[v]) low[u] = min(low[u], in[v]);
-		else
-		{
-			dfs(v, u);
-			low[u] = min(low[u], low[v]);
+		bcc.back().push_back(e);
 
-			if (low[v] >= in[u])
-			{
-				art[u] = (in[u] > 1 || in[v] > 2);
-
-				comp.push_back({u});
-				while (stk.back() != u)
-					comp.back().push_back(stk.back()), stk.pop_back();
-			}
-		}
+		if (e == last) break;
 	}
 }
 
-void get_tree(int n)
+void lowlink(int u, bool isroot)
+{
+	in[u] = low[u] = ++tt;
+
+	bool fwd = 0;
+
+	for (auto pp: grafo[u])
+	{
+		int v = pp.ff, e = pp.ss;
+		if (mark_edge[e]) continue;
+
+		mark_edge[e] = 1;
+		stk.push(e);
+
+		if (in[v])
+		{
+			low[u] = min(low[u], in[v]);
+			continue;
+		}
+
+		lowlink(v, 0);
+
+		low[u] = min(low[u], low[v]);
+
+		if (isroot ? fwd : (low[v] >= in[u]))
+		{
+			art[u] = 1;
+			make_component(e);
+		}
+
+		fwd = 1;
+	}
+}
+
+void build(void)
 {
 	for (int i = 1; i <= n; i++)
-		if (art[i]) id[i] = ++cc;
+	{
+		if (in[i]) continue;
 
-	for (auto &C: comp)
-	{	
-		cc++;
-		for (auto u: C)
+		int l = bcc.size();
+
+		lowlink(i, 1);
+		make_component(0);
+
+		int r = bcc.size();
+
+		for (int j = l; j < r; j++)
 		{
-			if (!art[u]) id[u] = cc;
-			else tree[id[u]].push_back(cc), tree[cc].push_back(id[u]);
+			vector<int> v;
+
+			for (auto e: bcc[j])
+			{
+				v.push_back(edge[e].ff);
+				v.push_back(edge[e].ss);
+			}
+
+			sort(all(v));
+			v.erase(unique(all(v)), v.end());
+
+			for (auto u: v)
+			{
+				if (art[u])
+				{
+					tree[n+j+1].push_back(u);
+					tree[u].push_back(n+j+1);
+				}
+				else
+				{
+					sz_bcc[n+j+1]++;
+				}
+			}
 		}
 	}
 }
