@@ -1,110 +1,94 @@
-// Convex Hull Trick
-// O(log n) per query and insertion
-
 #include <bits/stdc++.h>
 
 using namespace std;
 
 typedef long long ll;
-
 typedef double dd;
+
+const dd inf = 1e9+10;
 
 struct Line
 {
-	// 0 for lines in the envelope
-	// 1 for x-coord queries
-	char type;
-
-	// leftmost x-coord covered by line
+	ll m, b;
 	dd x;
 
-	// slope and y-intercept
-	ll m, b;
+	Line(ll m_=0, ll b_=0, dd x_=-inf) : m(m_), b(b_), x(x_){}
+
+	bool operator <(const Line &o) const
+	{
+		return m > o.m;
+	}
+
+	bool operator <(const ll &o) const
+	{
+		return x < (dd)o;
+	}
 };
 
-typedef set<Line>::iterator sit;
-
-set<Line> env;
-
-bool operator< (const Line &a, const Line &b)
+struct LineContainer : multiset<Line, less<>>
 {
-	if (a.type+b.type > 0) return a.x < b.x;
+	bool hasPrev(iterator it) {return it != begin();}
 
-	return a.m > b.m; // reverse this for max queries
-}
+	bool hasNext(iterator it) {return next(it) != end();}
 
-bool hasPrev(sit it)
-{
-	return (it != env.begin());
-}
-
-bool hasNext(sit it)
-{
-	return (next(it) != env.end() && ++it != env.end());
-}
-
-dd intersect(Line l1, Line l2)
-{
-	return (dd)(l2.b-l1.b)/(l1.m-l2.m);
-}
-
-bool bad(Line l1, Line l2, Line l3)
-{
-	return intersect(l1, l3) < intersect(l1, l2);
-}
-
-void get_x(sit it)
-{
-	if (hasPrev(it))
+	dd intersect(Line l1, Line l2)
 	{
-		Line l = *it;
-
-		l.x = intersect(*prev(it), *it);
-
-		env.erase(it); env.insert(l);
-	}
-}
-
-void add(ll m, ll b)
-{
-	Line l = {0, 0, m, b};
-
-	sit it = env.lower_bound(l);
-
-	// parallel lines case
-	if (it != env.end() && it->m == l.m)
-	{
-		if (it->b <= l.b) return;
-		env.erase(it);
+		return (dd)(l1.b-l2.b)/(l2.m-l1.m);
 	}
 
-	env.insert(l);
-	it = env.find(l);
-
-	// checks if line is useless
-	if (hasPrev(it) && hasNext(it) && bad(*prev(it), *it, *next(it)))
+	bool bad(Line l1, Line l2, Line l3)
 	{
-		env.erase(it);
-		return;
+		return intersect(l1, l3) < intersect(l1, l2);
 	}
 
-	// remove lines in the right
-	while (hasNext(it) && hasNext(next(it)) && bad(*it, *next(it), *next(next(it))))
-		env.erase(next(it));
+	void get_x(iterator it)
+	{
+		if (hasPrev(it))
+		{
+			Line l = *it;
 
-	// remove lines in the left
-	while (hasPrev(it) && hasPrev(prev(it)) && bad(*prev(prev(it)), *prev(it), *it))
-		env.erase(prev(it));
+			l.x = intersect(*prev(it), *it);
 
-	// update the leftmost x-coord value
-	get_x(it);
-	if (hasNext(it)) get_x(next(it));
-}
+			erase(it); insert(l);
+		}
+	}
 
-ll query(ll x)
-{
-	sit it = env.upper_bound({1, (dd)x, 0, 0});
-	it--;
+	void add(ll m, ll b)
+	{
+		Line l(m, b);
+		
+		auto it = lower_bound(l);
+		
+		if (it != end() && it->m == m)
+		{
+		    if (it->b <= b) return;
+		    erase(it);
+		}
+		
+		it = insert(l);
 
-	return (it->m * x + it->b);
-}
+		if (hasPrev(it) && hasNext(it) && bad(*prev(it), *it, *next(it)))
+		{
+			erase(it);
+			return;
+		}
+
+		while (hasPrev(it) && hasPrev(prev(it)) && bad(*prev(prev(it)), *prev(it), *it))
+			erase(prev(it));
+
+		while (hasNext(it) && hasNext(next(it)) && bad(*it, *next(it), *next(next(it))))
+			erase(next(it));
+
+		get_x(it);
+		if (hasNext(it)) get_x(next(it));
+	}
+
+	ll query(ll x)
+	{
+		auto it = lower_bound(x);
+		
+		if (it == end() || it->x > x) --it;
+
+		return it->m*x + it->b;
+	}
+} env;
