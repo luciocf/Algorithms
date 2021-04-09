@@ -79,8 +79,8 @@ struct LineContainer : multiset<Line, less<>>
 		while (hasNext(it) && hasNext(next(it)) && bad(*it, *next(it), *next(next(it))))
 			erase(next(it));
 
-		get_x(it);
 		if (hasNext(it)) get_x(next(it));
+		get_x(it);
 	}
 
 	ll query(ll x)
